@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>  <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-5YW0T2C109');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <title>땅따먹킹 Land King - 전자칠판용 땅따먹기 게임</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --neon:#00E5FF;
+            --magenta:#ff2e88;
+            --gold:#FFD54A;
+            --bg-deep:#0a0a0e;
+            --bg-panel:#17171c;
+        }
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-drag: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+        }
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: var(--bg-deep);
+            font-family: 'Poppins', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            overscroll-behavior: none;
+            touch-action: none;
+            -ms-content-zooming: none;
+        }
+        .kr { font-family: 'Black Han Sans', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; }
+        .en { display: block; font-family: 'Poppins', sans-serif; font-weight: 600; letter-spacing: 0.06em; opacity: 0.75; }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(10, 10, 14, 0.95); z-index: 10; color: #ffffff;
+            transition: opacity 0.3s ease;
+            overflow-y: auto; overflow-x: hidden; touch-action: pan-y;
+            padding: clamp(10px, 2.2vh, 30px) 14px;
+        }
+        .hidden { display: none !important; opacity: 0; pointer-events: none; }
+
+        /* ===== 시작 화면 (Start Screen) ===== */
+        #setupOverlay {
+            background:
+                radial-gradient(circle at 12% 18%, rgba(0,229,255,0.28), transparent 42%),
+                radial-gradient(circle at 88% 12%, rgba(255,46,136,0.24), transparent 42%),
+                radial-gradient(circle at 50% 95%, rgba(255,213,74,0.16), transparent 48%),
+                repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 42px),
+                repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 42px),
+                var(--bg-deep);
+            background-size: auto, auto, auto, 42px 42px, 42px 42px, auto;
+            animation: bgDrift 14s ease-in-out infinite alternate;
+            justify-content: flex-start;
+            padding-top: clamp(14px, 3vh, 34px);
+        }
+        @keyframes bgDrift {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 0 0, 0 0, 0 0, 26px 18px, -26px 18px, 0 0; }
+        }
+        .title-wrap { text-align: center; margin-bottom: clamp(10px, 2.2vh, 22px); position: relative; }
+        .crown-badge {
+            font-size: clamp(1.8rem, 4.5vh, 3rem);
+            display: block; margin-bottom: clamp(2px, 0.6vh, 6px);
+            filter: drop-shadow(0 0 12px rgba(255,213,74,0.7));
+            animation: crownFloat 2.6s ease-in-out infinite;
+        }
+        @keyframes crownFloat { 0%,100%{ transform: translateY(0) rotate(-3deg);} 50%{ transform: translateY(-6px) rotate(3deg);} }
+        h1.game-title {
+            font-size: clamp(2.1rem, 6.5vh, 4rem);
+            margin: 0; letter-spacing: 0.02em;
+            background: linear-gradient(90deg, var(--neon), var(--gold) 55%, var(--magenta));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            filter: drop-shadow(0 0 18px rgba(0,229,255,0.35));
+            font-weight: 400;
+            line-height: 1.1;
+        }
+        .title-sub {
+            font-size: clamp(0.85rem, 2vh, 1.3rem);
+            font-weight: 800; letter-spacing: 0.45em; color: var(--gold);
+            margin-top: clamp(2px, 0.8vh, 8px); text-shadow: 0 0 12px rgba(255,213,74,0.5);
+        }
+        .title-tagline {
+            font-size: clamp(0.72rem, 1.6vh, 1rem); color: #cfd3da; margin-top: clamp(6px, 1.2vh, 12px);
+            font-weight: 400;
+        }
+        .title-tagline .en { display: inline; opacity: 0.55; margin-left: 8px; font-weight: 400; }
+
+        .menu-section {
+            background: rgba(255,255,255,0.045); backdrop-filter: blur(6px);
+            padding: clamp(10px, 2vh, 22px) clamp(14px, 2.4vw, 26px);
+            border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: clamp(8px, 1.6vh, 18px); width: 92%; max-width: 620px; text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        .section-title {
+            font-size: clamp(0.95rem, 2vh, 1.3rem); margin-bottom: clamp(6px, 1.2vh, 12px); color: #f0f0f2;
+            display: flex; align-items: baseline; justify-content: center; gap: 8px; flex-wrap: wrap;
+        }
+        .section-title .en { display: inline; font-size: 0.65em; opacity: 0.55; letter-spacing: 0.08em; }
+        .btn-group { display: flex; justify-content: center; gap: clamp(6px, 1vw, 10px); flex-wrap: wrap; }
+        .btn {
+            background: #202027; color: #ffffff; border: 2px solid #3a3a42;
+            padding: clamp(8px, 1.4vh, 12px) clamp(14px, 2vw, 24px);
+            font-size: clamp(0.9rem, 1.8vh, 1.15rem); font-weight: bold; border-radius: 10px; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn:hover { border-color: var(--neon); background: #2a2a33; }
+        .btn.active { background: var(--neon); color: #0a0a0e; border-color: var(--neon); box-shadow: 0 0 15px rgba(0,229,255,0.5); }
+
+        .action-row { display: flex; justify-content: center; gap: clamp(8px, 1.6vw, 16px); flex-wrap: wrap; margin-top: clamp(4px, 1vh, 10px); }
+        .action-btn {
+            background: var(--magenta); color: white; border: none;
+            padding: clamp(11px, 2vh, 16px) clamp(24px, 4vw, 42px);
+            font-size: clamp(1.05rem, 2.2vh, 1.5rem); border-radius: 50px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 0 20px rgba(255,46,136,0.45); transition: transform 0.15s;
+            display: inline-flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.15;
+        }
+        .action-btn .en { font-size: 0.55em; letter-spacing: 0.1em; opacity: 0.85; }
+        .action-btn:hover { transform: scale(1.05); }
+        .action-btn.info-btn { background: #00b368; box-shadow: 0 0 20px rgba(0,179,104,0.45); }
+        .action-btn.start-btn { background: linear-gradient(135deg, var(--magenta), #ff6f3c); }
+
+        .more-games-wrap { margin-top: clamp(10px, 2vh, 20px); text-align: center; }
+        .more-games-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: clamp(0.72rem, 1.5vh, 0.9rem); color: #a9adb6; text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.18); border-radius: 30px;
+            padding: 6px 16px; transition: all 0.2s ease; background: rgba(255,255,255,0.03);
+        }
+        .more-games-link:hover { color: var(--gold); border-color: var(--gold); background: rgba(255,213,74,0.08); }
+        .more-games-link .en { display: inline; opacity: 0.7; font-weight: 400; letter-spacing: 0; margin-left: 2px; }
+
+        /* ===== 모달 (게임 설명) ===== */
+        .modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #1c1c24; padding: clamp(16px, 3vh, 30px); border-radius: 16px; z-index: 100;
+            width: 92%; max-width: 560px; max-height: 88vh; overflow-y: auto; touch-action: pan-y;
+            border: 2px solid var(--neon); box-shadow: 0 0 30px rgba(0,229,255,0.3); color: white; line-height: 1.6;
+        }
+        .modal h2 { margin-top: 0; color: var(--neon); font-size: clamp(1.1rem, 2.4vh, 1.5rem); }
+        .modal ul { padding-left: 20px; font-size: clamp(0.9rem, 1.9vh, 1.05rem); }
+        .modal li { margin-bottom: 10px; }
+        .modal-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+        .tab-btn {
+            flex: 1; padding: 9px 10px; background: #2a2a33; border: 2px solid #3a3a42; color: #ccc;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem; transition: all 0.2s;
+        }
+        .tab-btn.active { background: var(--neon); color: #0a0a0e; border-color: var(--neon); }
+        .close-btn { display: block; width: 100%; padding: 10px; background: #444; color: white; text-align: center; border: none; border-radius: 8px; font-size: 1.2rem; cursor: pointer; margin-top: 20px; }
+        .modal-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99; }
+
+        .confirm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: clamp(10px, 2vw, 20px); width: 92%; max-width: 800px; }
+        .player-card { background: #222; padding: clamp(12px, 2vh, 20px); border-radius: 15px; text-align: center; border: 3px solid transparent; transition: all 0.3s; }
+        .player-card.ready { border-color: var(--neon); background: rgba(0, 229, 255, 0.1); }
+        .player-color-box { width: clamp(34px, 6vh, 50px); height: clamp(34px, 6vh, 50px); border-radius: 50%; margin: 0 auto 10px auto; }
+        .confirm-btn { background: #444; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+        .player-card.ready .confirm-btn { background: var(--neon); color: black; }
+
+        .loading-spinner { width: clamp(50px, 10vh, 80px); height: clamp(50px, 10vh, 80px); border: 8px solid rgba(255,255,255,0.1); border-top: 8px solid var(--neon); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #positionOverlay { background: transparent; pointer-events: none; }
+        #positionOverlay h2 { font-size: clamp(1.8rem, 5vh, 4.5rem); color: #ffffff; margin-bottom: 6px; text-shadow: 0 0 15px #000, 0 0 25px #000; text-align: center; }
+        #positionOverlay .en { font-size: 0.42em; margin-top: 6px; }
+        #posCountText { font-size: clamp(3.5rem, 12vh, 8rem); font-weight: 900; color: var(--neon); text-shadow: 0 0 20px #000, 0 0 30px #000; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.8); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(0.8); opacity: 0.8; } }
+
+        #topBar { width: 100%; height: clamp(52px, 8vh, 80px); background: #1a1a22; border-bottom: 2px solid #2d2d38; display: flex; align-items: center; justify-content: center; padding: 0 20px; color: white; position: absolute; top: 0; z-index: 5; }
+        #timerDisplay { font-size: clamp(1.2rem, 3vh, 2rem); font-weight: bold; color: #ffcc00; background: #000; padding: 5px 15px; border-radius: 5px; border: 1px solid #333; }
+        #gameContainer { width: 100%; height: 100%; height: 100dvh; position: relative; }
+        canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+        /* 결과 화면 */
+        #gameOverOverlay { background: transparent; justify-content: space-between; padding: clamp(12px, 2.5vh, 22px) 0; pointer-events: none; }
+        #gameOverOverlay > * { pointer-events: auto; }
+        #gameOverOverlay h1 {
+            margin: 0; color: #0a6e88; background: rgba(255,255,255,0.95);
+            padding: clamp(8px, 1.6vh, 12px) clamp(20px, 4vw, 40px); border-radius: 16px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35); text-shadow: none;
+            font-size: clamp(1.1rem, 3vh, 2rem); text-align: center; font-family: 'Black Han Sans', sans-serif; font-weight: 400;
+        }
+        #gameOverOverlay h1 .en { font-size: 0.5em; opacity: 0.7; margin-top: 2px; }
+        #gameOverOverlay .action-btn { margin: 0 0 6px 0; }
+    </style>
+</head>
+<body>
+    <div id="setupOverlay" class="overlay">
+        <div class="title-wrap">
+            <span class="crown-badge">👑</span>
+            <h1 class="game-title kr">땅따먹킹</h1>
+            <div class="title-sub">LAND KING</div>
+            <div class="title-tagline">선을 긋고, 땅을 넓혀 왕좌를 차지하라!<span class="en">Draw the line. Claim the land. Become the King.</span></div>
+        </div>
+        <div class="menu-section">
+            <div class="section-title">👥 플레이어 인원 선택 (2~6인용) <span class="en">PLAYERS (2–6)</span></div>
+            <div class="btn-group" id="playerGroup">
+                <button class="btn active" onclick="setPlayers(2)">2인</button>
+                <button class="btn" onclick="setPlayers(3)">3인</button>
+                <button class="btn" onclick="setPlayers(4)">4인</button>
+                <button class="btn" onclick="setPlayers(5)">5인</button>
+                <button class="btn" onclick="setPlayers(6)">6인</button>
+            </div>
+        </div>
+        <div class="menu-section">
+            <div class="section-title">⏱️ 게임 시간 설정 <span class="en">GAME TIME</span></div>
+            <div class="btn-group" id="timeGroup">
+                <button class="btn active" onclick="setTimeLimit(1)">1분 (기본)</button>
+                <button class="btn" onclick="setTimeLimit(2)">2분</button>
+                <button class="btn" onclick="setTimeLimit(3)">3분</button>
+            </div>
+        </div>
+        <div class="action-row">
+            <button class="action-btn info-btn" onclick="openModal()">📖 게임 설명<span class="en">HOW TO PLAY</span></button>
+            <button class="action-btn start-btn" onclick="goToColorCheck()">🚀 시작하기<span class="en">START</span></button>
+        </div>
+        <div class="more-games-wrap">
+            <a class="more-games-link" href="http://킹수학.com" target="_blank" rel="noopener">
+                🔗 킹수학.com <span class="en">(more games)</span>
+            </a>
+        </div>
+    </div>
+
+    <div id="modalBg" class="modal-bg hidden" onclick="closeModal()"></div>
+    <div id="infoModal" class="modal hidden">
+        <h2>🎮 게임 설명 <span class="en" style="display:inline;opacity:0.6;font-size:0.6em;">HOW TO PLAY</span></h2>
+        <div class="modal-tabs">
+            <button class="tab-btn active" id="tabKR" onclick="setModalLang('kr')">한국어</button>
+            <button class="tab-btn" id="tabEN" onclick="setModalLang('en')">English</button>
+        </div>
+        <div id="modalContentKR">
+            <ul>
+                <li><b>시작 전 자리잡기:</b> 게임 시작 전 5초 동안 무작위로 자리가 배정됩니다. 자기 영토를 찾으세요!</li>
+                <li><b>꼬리 공격 조심:</b> 선을 그리거나 후퇴하는 중에 다른 사람이 내 꼬리를 건드리면, <b>그리던 선이 취소되고 내 땅이 10% 깎이며, 내 말은 처음 자리(베이스)로 돌아가 다시 시작합니다.</b></li>
+                <li><b>게임 오버:</b> 공격을 당하거나 남에게 땅을 모두 빼앗겨 <b>내 땅이 0%가 되면 게임 오버</b>되어 그 자리에서 탈락합니다.</li>
+            </ul>
+        </div>
+        <div id="modalContentEN" class="hidden">
+            <ul>
+                <li><b>Random Starting Position:</b> Right before the game begins, your spot is randomly assigned for 5 seconds. Find your own territory!</li>
+                <li><b>Watch Your Tail:</b> If an opponent touches your line while you're drawing or retreating, <b>your line is cancelled, you lose 10% of your territory, and your piece returns to its starting base.</b></li>
+                <li><b>Game Over:</b> <b>If your territory ever drops to 0%</b>, whether from an attack or losing all your land, you're eliminated instantly.</li>
+            </ul>
+        </div>
+        <button class="close-btn" onclick="closeModal()">닫기 / Close</button>
+    </div>
+
+    <div id="colorOverlay" class="overlay hidden">
+        <h1 style="font-size:clamp(1.4rem, 3.6vh, 2.5rem); margin-bottom: clamp(14px, 3vh, 30px); text-align:center;">
+            자신의 번호와 색상을 확인하세요!<span class="en" style="font-size:0.5em;">Check your number & color!</span>
+        </h1>
+        <div class="confirm-grid" id="confirmGrid"></div>
+    </div>
+
+    <div id="loadingOverlay" class="overlay hidden">
+        <h2 style="font-size: clamp(1.3rem, 3.2vh, 2.5rem); text-align: center; line-height: 1.5;">
+            무작위로 자리를<br>선정하고 있습니다..<span class="en" style="font-size:0.45em;">Randomizing positions...</span>
+        </h2>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div id="positionOverlay" class="overlay hidden">
+        <h2>자기 자리로 이동해 주세요<span class="en">Move to your position</span></h2>
+        <div id="posCountText">5</div>
+    </div>
+
+    <div id="gameOverOverlay" class="overlay hidden">
+        <h1 class="kr">🏆 게임 종료! 🏆<span class="en">GAME OVER</span></h1>
+        <button class="action-btn" onclick="resetToMenu()">처음으로 가기<span class="en">BACK TO MENU</span></button>
+    </div>
+
+    <div id="topBar" class="hidden">
+        <div id="timerDisplay">01:00</div>
+    </div>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <script>
+        // ===== 전자칠판 최적화: 제스처/줌/컨텍스트메뉴 차단 =====
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('gesturechange', e => e.preventDefault());
+        document.addEventListener('gestureend', e => e.preventDefault());
+        document.addEventListener('dblclick', e => e.preventDefault());
+        document.addEventListener('touchmove', function (e) { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
+        (function () {
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function (e) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) e.preventDefault();
+                lastTouchEnd = now;
+            }, { passive: false });
+        })();
+        window.addEventListener('wheel', function (e) { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        // ===== 효과음 엔진 (Web Audio, 외부 파일 불필요 / 단일 HTML 유지) =====
+        const Sound = (() => {
+            let ac = null, enabled = true;
+            function ensure() {
+                if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { enabled = false; } }
+                if (ac && ac.state === 'suspended') ac.resume();
+                return ac;
+            }
+            function tone(freq, dur, type = 'sine', vol = 0.2, when = 0) {
+                if (!enabled) return; const c = ensure(); if (!c) return;
+                const t0 = c.currentTime + when, osc = c.createOscillator(), g = c.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, t0);
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(vol, t0 + 0.012);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+                osc.connect(g).connect(c.destination); osc.start(t0); osc.stop(t0 + dur + 0.03);
+            }
+            function slide(f1, f2, dur, type = 'sawtooth', vol = 0.25) {
+                if (!enabled) return; const c = ensure(); if (!c) return;
+                const t0 = c.currentTime, osc = c.createOscillator(), g = c.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(f1, t0);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(1, f2), t0 + dur);
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(vol, t0 + 0.012);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+                osc.connect(g).connect(c.destination); osc.start(t0); osc.stop(t0 + dur + 0.03);
+            }
+            function noise(dur, vol = 0.3) {
+                if (!enabled) return; const c = ensure(); if (!c) return;
+                const t0 = c.currentTime, n = Math.floor(c.sampleRate * dur);
+                const buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+                for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+                const src = c.createBufferSource(); src.buffer = buf;
+                const filt = c.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 1100;
+                const g = c.createGain(); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+                src.connect(filt).connect(g).connect(c.destination); src.start(t0);
+            }
+            return {
+                unlock: () => ensure(),
+                setEnabled: v => { enabled = v; },
+                click:     () => tone(520, 0.08, 'square', 0.14),
+                select:    () => { tone(440, 0.08, 'square', 0.14); tone(660, 0.09, 'square', 0.12, 0.05); },
+                ready:     () => { tone(523, 0.1, 'sine', 0.2); tone(784, 0.14, 'sine', 0.2, 0.09); },
+                grab:      () => tone(300, 0.05, 'triangle', 0.1),
+                retreat:   () => slide(280, 620, 0.13, 'sine', 0.13),
+                tick:      () => tone(880, 0.09, 'sine', 0.22),
+                go:        () => { tone(523, 0.12, 'square', 0.25); tone(659, 0.12, 'square', 0.25, 0.1); tone(1047, 0.28, 'square', 0.28, 0.2); },
+                capture:   () => { tone(659, 0.09, 'triangle', 0.22); tone(880, 0.09, 'triangle', 0.22, 0.08); tone(1319, 0.2, 'triangle', 0.25, 0.16); },
+                hit:       () => { slide(420, 60, 0.3, 'sawtooth', 0.35); noise(0.22, 0.22); },
+                eliminate: () => { slide(320, 70, 0.6, 'square', 0.3); tone(196, 0.45, 'triangle', 0.24, 0.16); },
+                warn:      () => tone(1046, 0.12, 'sine', 0.24),
+                fanfare:   () => { [[523, 0], [659, 0.13], [784, 0.26], [1047, 0.4]].forEach(([f, w]) => tone(f, 0.32, 'square', 0.28, w)); }
+            };
+        })();
+        // 첫 사용자 입력에서 오디오 잠금 해제 (브라우저 정책)
+        window.addEventListener('pointerdown', () => Sound.unlock(), { once: true });
+
+        function setModalLang(lang) {
+            Sound.click();
+            const kr = document.getElementById('modalContentKR');
+            const en = document.getElementById('modalContentEN');
+            const tabKR = document.getElementById('tabKR');
+            const tabEN = document.getElementById('tabEN');
+            if (lang === 'kr') { kr.classList.remove('hidden'); en.classList.add('hidden'); tabKR.classList.add('active'); tabEN.classList.remove('active'); }
+            else { en.classList.remove('hidden'); kr.classList.add('hidden'); tabEN.classList.add('active'); tabKR.classList.remove('active'); }
+        }
+
+        let selectedPlayers = 2; let selectedMinutes = 1; let gameTimeLeft = 60; 
+        let timerInterval = null; let gameState = "MENU";
+        const GRID_W = 160; const GRID_H = 90;
+        let cellW, cellH; let grid = []; let tailGrid = []; 
+        const PLAYER_CONFIGS = [
+            { id: 1, name: '1P', color: '#FF3333', emoji: '🔴', bg: 'rgba(255, 51, 51, 0.4)' },
+            { id: 2, name: '2P', color: '#3388FF', emoji: '🔵', bg: 'rgba(51, 136, 255, 0.4)' },
+            { id: 3, name: '3P', color: '#00CC44', emoji: '🟢', bg: 'rgba(0, 204, 68, 0.4)' },
+            { id: 4, name: '4P', color: '#EEEE00', emoji: '🟡', bg: 'rgba(238, 238, 0, 0.4)' },
+            { id: 5, name: '5P', color: '#CC00CC', emoji: '🟣', bg: 'rgba(204, 0, 204, 0.4)' },
+            { id: 6, name: '6P', color: '#FF8800', emoji: '🟠', bg: 'rgba(255, 136, 0, 0.4)' }
+        ];
+        let players = []; let readyStatus = [];
+        let eliminationCounter = 0; // 탈락 순서(랭킹 동점 처리용)
+        let endRankMap = null; // 최종 순위 (id -> 등수)
+        function openModal() { Sound.click(); document.getElementById('modalBg').classList.remove('hidden'); document.getElementById('infoModal').classList.remove('hidden'); }
+        function closeModal() { Sound.click(); document.getElementById('modalBg').classList.add('hidden'); document.getElementById('infoModal').classList.add('hidden'); }
+        function setPlayers(num) { Sound.select(); selectedPlayers = num; document.querySelectorAll('#playerGroup .btn').forEach((btn, idx) => btn.classList.toggle('active', idx === num - 2)); }
+        function setTimeLimit(mins) { Sound.select(); selectedMinutes = mins; document.querySelectorAll('#timeGroup .btn').forEach((btn, idx) => btn.classList.toggle('active', idx === mins - 1)); }
+        function goToColorCheck() {
+            Sound.click();
+            document.getElementById('setupOverlay').classList.add('hidden');
+            document.getElementById('colorOverlay').classList.remove('hidden');
+            const gridDiv = document.getElementById('confirmGrid');
+            gridDiv.innerHTML = ''; readyStatus = new Array(selectedPlayers).fill(false);
+            for(let i=0; i<selectedPlayers; i++) {
+                let conf = PLAYER_CONFIGS[i];
+                let card = document.createElement('div');
+                card.className = 'player-card'; card.id = `card-${i}`;
+                card.innerHTML = `<div class="player-color-box" style="background-color: ${conf.color};"></div><h2 style="margin: 10px 0; color: ${conf.color}">${conf.name}</h2><button class="confirm-btn" id="btn-${i}" onclick="toggleReady(${i})">확인 / OK</button>`;
+                gridDiv.appendChild(card);
+            }
+        }
+        function toggleReady(idx) {
+            Sound.ready();
+            readyStatus[idx] = true;
+            document.getElementById(`card-${idx}`).classList.add('ready');
+            document.getElementById(`btn-${idx}`).innerText = '준비완료 READY';
+            if (readyStatus.every(s => s === true)) setTimeout(startLoading, 500);
+        }
+        function startLoading() {
+            document.getElementById('colorOverlay').classList.add('hidden');
+            let lo = document.getElementById('loadingOverlay');
+            lo.classList.remove('hidden');
+            setTimeout(() => { lo.classList.add('hidden'); startPositioning(); }, 5000);
+        }
+        function startPositioning() {
+            document.getElementById('topBar').classList.remove('hidden');
+            const posOverlay = document.getElementById('positionOverlay');
+            posOverlay.classList.remove('hidden');
+            resizeCanvas(); initGameData(); gameState = "COUNTDOWN";
+            canvas.addEventListener('pointerdown', handlePointerDown);
+            window.addEventListener('pointermove', handlePointerMove);
+            window.addEventListener('pointerup', handlePointerUp);
+            window.addEventListener('pointercancel', handlePointerUp);
+            requestAnimationFrame(gameLoop);
+            let count = 5;
+            document.getElementById('posCountText').innerText = count;
+            let interval = setInterval(() => {
+                count--;
+                if (count > 0) { document.getElementById('posCountText').innerText = count; Sound.tick(); }
+                else if (count === 0) { document.getElementById('posCountText').innerText = "START!"; Sound.go(); }
+                else {
+                    clearInterval(interval);
+                    posOverlay.classList.add('hidden');
+                    gameState = "PLAYING";
+                    gameTimeLeft = selectedMinutes * 60;
+                    updateTimerUI();
+                    timerInterval = setInterval(() => {
+                        if (gameState === "PLAYING") {
+                            gameTimeLeft--; updateTimerUI();
+                            if (gameTimeLeft > 0 && gameTimeLeft <= 5) Sound.warn();
+                            if (gameTimeLeft <= 0) endGame();
+                        }
+                    }, 1000);
+                }
+            }, 1000);
+        }
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; cellW = canvas.width / GRID_W; cellH = canvas.height / GRID_H; if (gameState === "END") drawEndBoard(); }
+        window.addEventListener('resize', resizeCanvas);
+        function initGameData() {
+            grid = Array.from({length: GRID_W}, () => Array(GRID_H).fill(0));
+            tailGrid = Array.from({length: GRID_W}, () => Array(GRID_H).fill(0));
+            players = []; let sectionWidth = GRID_W / selectedPlayers; let baseY = Math.floor(GRID_H / 2);
+            let availablePositions = [];
+            for (let i = 0; i < selectedPlayers; i++) { availablePositions.push(Math.floor((sectionWidth * i) + (sectionWidth / 2))); }
+            for (let i = availablePositions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [availablePositions[i], availablePositions[j]] = [availablePositions[j], availablePositions[i]];
+            }
+            for (let i = 0; i < selectedPlayers; i++) {
+                let baseX = availablePositions[i];
+                let p = { ...PLAYER_CONFIGS[i], x: baseX, y: baseY, tx: baseX, ty: baseY, spawnX: baseX, spawnY: baseY, activePointerId: null, isDead: false, isEliminated: false, respawnTimer: 0, tailPath: [], pct: '0.0', centerX: baseX, centerY: baseY, lastSafeGridX: baseX, lastSafeGridY: baseY, lastSafeX: baseX, lastSafeY: baseY, isRetreating: false };
+                players.push(p); spawnBase(p.id, p.spawnX, p.spawnY, 5);
+            }
+            eliminationCounter = 0; endRankMap = null;
+            calculatePercentages();
+        }
+        // 완전 탈락 처리(땅 0%) — 탈락 순서/시각 기록
+        function markEliminated(p) {
+            if (p.isEliminated) return;
+            p.isEliminated = true; p.isDead = true;
+            p.eliminatedOrder = ++eliminationCounter;
+            p.eliminatedTime = performance.now();
+            p.tailPath.forEach(node => tailGrid[node.x][node.y] = 0); p.tailPath = [];
+            Sound.eliminate();
+        }
+        // 공격당한 뒤 "처음(자기 베이스)부터 다시 시작"
+        function respawnAtBase(p) {
+            let bx = p.spawnX, by = p.spawnY;
+            // 베이스가 남에게 넘어갔으면 남은 내 땅 중 가장 중심에 가까운 칸으로
+            if (!(grid[bx] && grid[bx][by] === p.id)) {
+                let best = null, bestD = Infinity;
+                const cx = p.centerX || bx, cy = p.centerY || by;
+                for (let x = 0; x < GRID_W; x++) {
+                    for (let y = 0; y < GRID_H; y++) {
+                        if (grid[x][y] === p.id) {
+                            const d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+                            if (d < bestD) { bestD = d; best = { x, y }; }
+                        }
+                    }
+                }
+                if (!best) { markEliminated(p); return; }
+                bx = best.x; by = best.y;
+            }
+            p.x = bx + 0.5; p.y = by + 0.5; p.tx = p.x; p.ty = p.y;
+            p.lastSafeGridX = bx; p.lastSafeGridY = by; p.lastSafeX = p.x; p.lastSafeY = p.y;
+            p.isRetreating = false; p.tailPath = [];
+        }
+        function spawnBase(pId, cx, cy, r) {
+            for (let x = cx - r; x <= cx + r; x++) {
+                for (let y = cy - r; y <= cy + r; y++) {
+                    if (x >= 0 && x < GRID_W && y >= 0 && y < GRID_H) { if (Math.hypot(x - cx, y - cy) <= r) grid[x][y] = pId; }
+                }
+            }
+        }
+        function updateTimerUI() {
+            const m = Math.floor(gameTimeLeft / 60).toString().padStart(2, '0');
+            const s = (gameTimeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').innerText = `남은 시간 ${m}:${s}`;
+        }
+        function handlePointerDown(e) {
+            if (gameState !== "PLAYING") return; e.preventDefault();
+            let tx = e.clientX / cellW; let ty = e.clientY / cellH;
+            let hitPlayer = players.find(p => !p.isDead && !p.isEliminated && p.activePointerId === null && Math.hypot(tx - p.x, ty - p.y) < 5);
+            if (!hitPlayer) {
+                let igx = Math.floor(tx), igy = Math.floor(ty);
+                if (igx >= 0 && igx < GRID_W && igy >= 0 && igy < GRID_H) {
+                    let ownerId = grid[igx][igy];
+                    if (ownerId > 0) {
+                        let p = players.find(pl => pl.id === ownerId);
+                        if (p && !p.isDead && !p.isEliminated && p.activePointerId === null && !p.isRetreating) { p.x = tx; p.y = ty; hitPlayer = p; }
+                    }
+                }
+            }
+            if (hitPlayer) { hitPlayer.activePointerId = e.pointerId; hitPlayer.isRetreating = false; hitPlayer.tx = tx; hitPlayer.ty = ty; Sound.grab(); }
+        }
+        function handlePointerMove(e) {
+            if (gameState !== "PLAYING") return;
+            let p = players.find(pl => pl.activePointerId === e.pointerId);
+            if (p && !p.isDead && !p.isEliminated && !p.isRetreating) { p.tx = Math.max(0, Math.min(GRID_W, e.clientX / cellW)); p.ty = Math.max(0, Math.min(GRID_H, e.clientY / cellH)); }
+        }
+        function handlePointerUp(e) {
+            let p = players.find(pl => pl.activePointerId === e.pointerId);
+            if (p) { p.activePointerId = null; if (p.tailPath.length > 0) { p.isRetreating = true; Sound.retreat(); } }
+        }
+        function killPlayer(p) {
+            Sound.hit();
+            p.isDead = true; p.respawnTimer = 120; p.activePointerId = null; p.isRetreating = false;
+            p.tailPath.forEach(node => tailGrid[node.x][node.y] = 0); p.tailPath = [];
+            let owned = []; let dx = [1, -1, 0, 0], dy = [0, 0, 1, -1];
+            for (let x = 0; x < GRID_W; x++) {
+                for (let y = 0; y < GRID_H; y++) {
+                    if (grid[x][y] === p.id) {
+                        if (x === p.lastSafeGridX && y === p.lastSafeGridY) continue;
+                        let isEdge = false;
+                        for (let i = 0; i < 4; i++) {
+                            let nx = x + dx[i], ny = y + dy[i];
+                            if (nx < 0 || nx >= GRID_W || ny < 0 || ny >= GRID_H || grid[nx][ny] !== p.id) { isEdge = true; break; }
+                        }
+                        if (isEdge) owned.push({x, y});
+                    }
+                }
+            }
+            if (owned.length === 0) {
+                for (let x = 0; x < GRID_W; x++) {
+                    for (let y = 0; y < GRID_H; y++) {
+                        if (grid[x][y] === p.id && !(x === p.lastSafeGridX && y === p.lastSafeGridY)) { owned.push({x, y}); }
+                    }
+                }
+            }
+            let penalty = Math.floor(owned.length * 0.1); if (penalty === 0 && owned.length > 0) penalty = 1;
+            owned.sort(() => Math.random() - 0.5);
+            for (let i = 0; i < penalty; i++) { grid[owned[i].x][owned[i].y] = 0; }
+            
+            // V8 Elimination check: Count remaining cells
+            let remainingCells = 0;
+            for(let x=0; x<GRID_W; x++) { for(let y=0; y<GRID_H; y++) { if(grid[x][y] === p.id) remainingCells++; } }
+            if (remainingCells === 0) { markEliminated(p); }
+            else {
+                // 땅을 10% 잃고, 자기 베이스(처음 자리)로 돌아가 다시 시작
+                respawnAtBase(p);
+            }
+        }
+        function captureLand(pId) {
+            let visited = Array.from({length: GRID_W}, () => Array(GRID_H).fill(false));
+            let queue = [];
+            for (let x = 0; x < GRID_W; x++) {
+                if (grid[x][0] !== pId) { queue.push({x: x, y: 0}); visited[x][0] = true; }
+                if (grid[x][GRID_H - 1] !== pId) { queue.push({x: x, y: GRID_H - 1}); visited[x][GRID_H - 1] = true; }
+            }
+            for (let y = 0; y < GRID_H; y++) {
+                if (grid[0][y] !== pId) { queue.push({x: 0, y: y}); visited[0][y] = true; }
+                if (grid[GRID_W - 1][y] !== pId) { queue.push({x: GRID_W - 1, y: y}); visited[GRID_W - 1][y] = true; }
+            }
+            const dx = [1, -1, 0, 0], dy = [0, 0, 1, -1];
+            let head = 0;
+            while (head < queue.length) {
+                let curr = queue[head++];
+                for (let i = 0; i < 4; i++) {
+                    let nx = curr.x + dx[i], ny = curr.y + dy[i];
+                    if (nx >= 0 && nx < GRID_W && ny >= 0 && ny < GRID_H) {
+                        if (!visited[nx][ny] && grid[nx][ny] !== pId) { visited[nx][ny] = true; queue.push({x: nx, y: ny}); }
+                    }
+                }
+            }
+            for (let x = 0; x < GRID_W; x++) {
+                for (let y = 0; y < GRID_H; y++) { if (!visited[x][y]) grid[x][y] = pId; }
+            }
+        }
+        function calculatePercentages() {
+            let counts = new Array(7).fill(0); let sumX = new Array(7).fill(0); let sumY = new Array(7).fill(0);
+            for (let x = 0; x < GRID_W; x++) {
+                for (let y = 0; y < GRID_H; y++) { let id = grid[x][y]; if(id > 0) { counts[id]++; sumX[id] += x; sumY[id] += y; } }
+            }
+            let totalCells = GRID_W * GRID_H;
+            players.forEach(p => {
+                p.pct = ((counts[p.id] / totalCells) * 100).toFixed(1);
+                if (counts[p.id] > 0) { 
+                    p.centerX = sumX[p.id] / counts[p.id]; p.centerY = sumY[p.id] / counts[p.id]; 
+                } else if (gameState === "PLAYING" && !p.isEliminated) {
+                    markEliminated(p);
+                }
+            });
+        }
+        function gameLoop() {
+            if (gameState === "MENU" || gameState === "END") return;
+            if (gameState === "PLAYING") {
+                players.forEach(p => {
+                    if (p.isEliminated) return;
+                    if (p.isDead) { p.respawnTimer--; if (p.respawnTimer <= 0) p.isDead = false; return; }
+                    if (!p.isRetreating && p.activePointerId !== null) {
+                        let dx = p.tx - p.x, dy = p.ty - p.y; let dist = Math.hypot(dx, dy);
+                        if (dist > 0.05) { let step = Math.min(dist, 0.25); p.x += (dx / dist) * step; p.y += (dy / dist) * step; }
+                    } else if (p.isRetreating) {
+                        if (p.tailPath.length > 0) {
+                            let nextNode = p.tailPath[p.tailPath.length - 1];
+                            let dx = (nextNode.x + 0.5) - p.x; let dy = (nextNode.y + 0.5) - p.y; let dist = Math.hypot(dx, dy);
+                            if (dist < 0.6) {
+                                let popped = p.tailPath.pop(); tailGrid[popped.x][popped.y] = 0;
+                                if (p.tailPath.length === 0) { p.isRetreating = false; }
+                            } else { 
+                                let step = Math.min(dist, 0.25); 
+                                p.x += (dx / dist) * step; p.y += (dy / dist) * step; 
+                            }
+                        } else { p.isRetreating = false; }
+                    }
+                    let igx = Math.floor(Math.max(0, Math.min(GRID_W - 1, p.x))); let igy = Math.floor(Math.max(0, Math.min(GRID_H - 1, p.y)));
+                    let onOwnTerritory = (grid[igx][igy] === p.id);
+                    if (!p.isDead) {
+                        if (onOwnTerritory) {
+                            if (!p.isRetreating) { p.lastSafeGridX = igx; p.lastSafeGridY = igy; p.lastSafeX = p.x; p.lastSafeY = p.y; }
+                            else { p.tailPath.forEach(node => tailGrid[node.x][node.y] = 0); p.tailPath = []; p.isRetreating = false; }
+                            if (p.tailPath.length > 0 && !p.isRetreating) {
+                                p.tailPath.forEach(node => { grid[node.x][node.y] = p.id; tailGrid[node.x][node.y] = 0; }); captureLand(p.id); p.tailPath = []; Sound.capture();
+                            }
+                        } else {
+                            if (!p.isRetreating) {
+                                let alreadyInTail = p.tailPath.some(node => node.x === igx && node.y === igy);
+                                if (!alreadyInTail) { p.tailPath.push({ x: igx, y: igy }); tailGrid[igx][igy] = p.id; }
+                            }
+                            if (p.lastSafeGridX !== undefined && grid[p.lastSafeGridX][p.lastSafeGridY] !== p.id) {
+                                p.tailPath.forEach(node => tailGrid[node.x][node.y] = 0); p.tailPath = []; p.isRetreating = false;
+                                // p.lastSafeGridX가 남에게 먹혔으므로 중앙으로 회귀
+                                p.x = p.centerX; p.y = p.centerY; p.tx = p.x; p.ty = p.y;
+                            }
+                        }
+                    }
+                });
+                players.forEach(attacker => {
+                    if (attacker.isDead || attacker.isEliminated) return;
+                    let ax = Math.floor(Math.max(0, Math.min(GRID_W - 1, attacker.x)));
+                    let ay = Math.floor(Math.max(0, Math.min(GRID_H - 1, attacker.y)));
+                    // 말 주변 반경(3x3)까지 검사 → 꼬리에 스치기만 해도 확실히 깨짐
+                    const R = 1;
+                    let hitTargetId = 0;
+                    for (let ox = -R; ox <= R && !hitTargetId; ox++) {
+                        for (let oy = -R; oy <= R && !hitTargetId; oy++) {
+                            let nx = ax + ox, ny = ay + oy;
+                            if (nx < 0 || nx >= GRID_W || ny < 0 || ny >= GRID_H) continue;
+                            let t = tailGrid[nx][ny];
+                            if (t > 0 && t !== attacker.id) hitTargetId = t;
+                        }
+                    }
+                    if (hitTargetId > 0) {
+                        let victim = players.find(pl => pl.id === hitTargetId);
+                        if (victim && !victim.isDead && !victim.isEliminated) { killPlayer(victim); }
+                    }
+                });
+                calculatePercentages();
+            }
+            ctx.fillStyle = '#16161a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let x = 0; x < GRID_W; x++) {
+                for (let y = 0; y < GRID_H; y++) {
+                    let ownerId = grid[x][y];
+                    if (ownerId > 0) { ctx.fillStyle = players.find(p => p.id === ownerId)?.bg || 'transparent'; ctx.fillRect(x * cellW, y * cellH, cellW + 0.5, cellH + 0.5); }
+                }
+            }
+            players.forEach(p => {
+                if (p.isDead || p.isEliminated || p.tailPath.length === 0) return;
+                ctx.strokeStyle = p.color; ctx.lineWidth = Math.min(cellW, cellH) * 0.8; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath();
+                p.tailPath.forEach((node, idx) => { let cx = (node.x + 0.5) * cellW, cy = (node.y + 0.5) * cellH; if (idx === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy); });
+                ctx.lineTo(p.x * cellW, p.y * cellH); ctx.stroke();
+            });
+            players.forEach(p => {
+                if (!p.isEliminated && parseFloat(p.pct) > 0) {
+                    let textX = p.centerX * cellW, textY = p.centerY * cellH;
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+                    ctx.strokeText(p.name, textX, textY - 12); ctx.strokeText(`${p.pct}%`, textX, textY + 16);
+                    ctx.fillText(p.name, textX, textY - 12); ctx.fillText(`${p.pct}%`, textX, textY + 16);
+                }
+            });
+            players.forEach(p => {
+                if (p.isEliminated) {
+                    // 탈락 안내는 5초 동안만 표시하고 사라지게 함
+                    if (p.eliminatedTime && (performance.now() - p.eliminatedTime) < 5000) {
+                        let textX = p.spawnX * cellW, textY = p.spawnY * cellH;
+                        ctx.fillStyle = '#FF3333'; ctx.font = '900 30px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.strokeStyle = '#000'; ctx.lineWidth = 6;
+                        ctx.strokeText(`${p.name} GAME OVER`, textX, textY - 40); ctx.fillText(`${p.name} GAME OVER`, textX, textY - 40);
+                    }
+                } else if (!p.isDead) {
+                    let px = p.x * cellW, py = p.y * cellH; let size = Math.min(cellW, cellH) * 2;
+                    ctx.font = `${size}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(p.emoji, px, py + size*0.1);
+                }
+            });
+            requestAnimationFrame(gameLoop);
+        }
+        function endGame() {
+            gameState = "END"; clearInterval(timerInterval);
+            canvas.removeEventListener('pointerdown', handlePointerDown); window.removeEventListener('pointermove', handlePointerMove); window.removeEventListener('pointerup', handlePointerUp); window.removeEventListener('pointercancel', handlePointerUp);
+            // 순위 계산: 생존자는 땅 비율 높은 순, 탈락자는 나중에 탈락한 사람이 위로
+            let rank = [...players].sort((a, b) => {
+                if (a.isEliminated && b.isEliminated) return (b.eliminatedOrder || 0) - (a.eliminatedOrder || 0);
+                if (a.isEliminated) return 1;
+                if (b.isEliminated) return -1;
+                return parseFloat(b.pct) - parseFloat(a.pct);
+            });
+            endRankMap = {};
+            rank.forEach((p, idx) => { endRankMap[p.id] = idx + 1; });
+            drawEndBoard(); // 지도(모든 땅) + 각 땅 위에 메달/등수/% 표시
+            document.getElementById('topBar').classList.add('hidden');
+            document.getElementById('gameOverOverlay').classList.remove('hidden');
+            Sound.fanfare();
+        }
+        // 최종 결과: 지도를 밝게 그대로 보여주고, 각 플레이어 땅 위에 메달(1~3위)/등수와 %를 표시
+        // 1위 🥇 2위 🥈 3위 🥉 는 금/은/동색으로 강조하고, 4~6위는 회색으로 구분해서 표시
+        function drawEndBoard() {
+            if (!endRankMap) return;
+            ctx.fillStyle = '#16161a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let x = 0; x < GRID_W; x++) {
+                for (let y = 0; y < GRID_H; y++) {
+                    let o = grid[x][y];
+                    if (o > 0) { ctx.fillStyle = players.find(p => p.id === o)?.bg || 'transparent'; ctx.fillRect(x * cellW, y * cellH, cellW + 0.5, cellH + 0.5); }
+                }
+            }
+            const medalEmoji = r => r === 1 ? '🥇 ' : r === 2 ? '🥈 ' : r === 3 ? '🥉 ' : '';
+            const medalColor = r => r === 1 ? '#FFD54A' : r === 2 ? '#E6E6E6' : r === 3 ? '#FFA657' : '#8a8d94';
+            players.forEach(p => {
+                let hasLand = !p.isEliminated && parseFloat(p.pct) > 0;
+                let tx = (hasLand ? p.centerX : p.spawnX) * cellW;
+                let ty = (hasLand ? p.centerY : p.spawnY) * cellH;
+                let rank = endRankMap[p.id];
+                let pctStr = p.isEliminated ? '탈락 OUT' : `${p.pct}%`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+                // 윗줄: "🥇 1P 1위" (4~6위는 메달 없이 회색으로 표시)
+                ctx.font = '900 42px sans-serif'; ctx.lineWidth = 8; ctx.strokeStyle = '#000';
+                let label = `${medalEmoji(rank)}${p.name} ${rank}위`;
+                ctx.strokeText(label, tx, ty - 22);
+                ctx.fillStyle = medalColor(rank); ctx.fillText(label, tx, ty - 22);
+                // 아랫줄: "32.4%" 또는 "탈락 OUT"
+                ctx.font = 'bold 36px sans-serif'; ctx.lineWidth = 7; ctx.strokeStyle = '#000';
+                ctx.strokeText(pctStr, tx, ty + 26);
+                ctx.fillStyle = rank <= 3 ? '#FFFFFF' : '#b7bac0'; ctx.fillText(pctStr, tx, ty + 26);
+            });
+        }
+        function resetToMenu() { Sound.click(); gameState = "MENU"; document.getElementById('gameOverOverlay').classList.add('hidden'); document.getElementById('setupOverlay').classList.remove('hidden'); }
+    </script>
+</body>
+</html>
