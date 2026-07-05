@@ -162,7 +162,7 @@
         .close-btn { display: block; width: 100%; padding: 10px; background: #444; color: white; text-align: center; border: none; border-radius: 8px; font-size: 1.2rem; cursor: pointer; margin-top: 20px; }
         .modal-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99; }
 
-        .confirm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: clamp(10px, 2vw, 20px); width: 92%; max-width: 900px; }
+        .confirm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: clamp(10px, 2vw, 20px); width: 92%; max-width: 800px; }
         .player-card { background: #222; padding: clamp(12px, 2vh, 20px); border-radius: 15px; text-align: center; border: 3px solid transparent; transition: all 0.3s; }
         .player-card.ready { border-color: var(--neon); background: rgba(0, 229, 255, 0.1); }
         .player-color-box { width: clamp(34px, 6vh, 50px); height: clamp(34px, 6vh, 50px); border-radius: 50%; margin: 0 auto 10px auto; }
@@ -182,6 +182,17 @@
         #timerDisplay { font-size: clamp(1.2rem, 3vh, 2rem); font-weight: bold; color: #ffcc00; background: #000; padding: 5px 15px; border-radius: 5px; border: 1px solid #333; }
         #gameContainer { width: 100%; height: 100%; height: 100dvh; position: relative; }
         canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+        /* 한 칸 길이(Grid size) 안내 라벨 - 좌상단 */
+        #gridSizeLabel {
+            position: absolute; top: clamp(60px, 9vh, 92px); left: clamp(10px, 1.6vw, 20px);
+            z-index: 6; background: rgba(0,0,0,0.55); border: 2px solid var(--gold);
+            border-radius: 10px; padding: clamp(6px, 1.2vh, 10px) clamp(12px, 1.6vw, 18px);
+            color: var(--gold); font-weight: 800; box-shadow: 0 0 14px rgba(255,213,74,0.35);
+            line-height: 1.3;
+        }
+        #gridSizeLabel .kr { font-size: clamp(1rem, 2.4vh, 1.6rem); }
+        #gridSizeLabel .en { display: inline; font-size: clamp(0.6rem, 1.3vh, 0.85rem); opacity: 0.85; margin-left: 6px; }
 
         /* 결과 화면 */
         #gameOverOverlay { background: transparent; justify-content: space-between; padding: clamp(12px, 2.5vh, 22px) 0; pointer-events: none; }
@@ -222,6 +233,14 @@
                 <button class="btn" onclick="setTimeLimit(3)">3분</button>
             </div>
         </div>
+        <div class="menu-section">
+            <div class="section-title">🏆 승부 조건 선택 <span class="en">WIN CONDITION</span></div>
+            <div class="btn-group" id="winConditionGroup">
+                <button class="btn" onclick="setWinCondition('perimeter')">둘레 (cm)</button>
+                <button class="btn" onclick="setWinCondition('area')">넓이 (cm²)</button>
+                <button class="btn active" onclick="setWinCondition('percent')">넓이 백분율 (%)</button>
+            </div>
+        </div>
         <div class="action-row">
             <button class="action-btn info-btn" onclick="openModal()">📖 게임 설명<span class="en">HOW TO PLAY</span></button>
             <button class="action-btn start-btn" onclick="goToColorCheck()">🚀 시작하기<span class="en">START</span></button>
@@ -244,14 +263,18 @@
             <ul>
                 <li><b>시작 전 자리잡기:</b> 게임 시작 전 5초 동안 무작위로 자리가 배정됩니다. 자기 영토를 찾으세요!</li>
                 <li><b>꼬리 공격 조심:</b> 선을 그리거나 후퇴하는 중에 다른 사람이 내 꼬리를 건드리면, <b>그리던 선이 취소되고 내 땅이 10% 깎이며, 내 말은 처음 자리(베이스)로 돌아가 다시 시작합니다.</b></li>
-                <li><b>게임 오버:</b> 공격을 당하거나 남에게 땅을 모두 빼앗겨 <b>내 땅이 0%가 되면 게임 오버</b>되어 그 자리에서 탈락합니다.</li>
+                <li><b>게임 오버:</b> 공격을 당하거나 남에게 땅을 모두 빼앗겨 <b>내 땅이 0이 되면 게임 오버</b>되어 그 자리에서 탈락합니다.</li>
+                <li><b>한 칸(Grid) = 1cm:</b> 게임판의 사각형 한 칸을 실제 길이 1cm로 계산합니다. 화면 좌상단에서 확인할 수 있어요.</li>
+                <li><b>승부 조건:</b> <b>둘레(내 땅 테두리 길이, cm)</b> / <b>넓이(내 땅의 실제 면적, cm²)</b> / <b>넓이 백분율(전체 플레이어가 차지한 땅 중 내 비율, %)</b> 세 가지 중 하나를 골라 순위를 정합니다.</li>
             </ul>
         </div>
         <div id="modalContentEN" class="hidden">
             <ul>
                 <li><b>Random Starting Position:</b> Right before the game begins, your spot is randomly assigned for 5 seconds. Find your own territory!</li>
                 <li><b>Watch Your Tail:</b> If an opponent touches your line while you're drawing or retreating, <b>your line is cancelled, you lose 10% of your territory, and your piece returns to its starting base.</b></li>
-                <li><b>Game Over:</b> <b>If your territory ever drops to 0%</b>, whether from an attack or losing all your land, you're eliminated instantly.</li>
+                <li><b>Game Over:</b> <b>If your territory ever drops to 0</b>, whether from an attack or losing all your land, you're eliminated instantly.</li>
+                <li><b>1 Grid Cell = 1cm:</b> Each square on the board represents an actual 1cm length. You can check this in the top-left corner of the screen.</li>
+                <li><b>Win Condition:</b> Choose one of three ways to rank players: <b>Perimeter</b> (the border length of your land, in cm), <b>Area</b> (your land's actual size, in cm²), or <b>Area Percentage</b> (your share out of all players' combined land, in %).</li>
             </ul>
         </div>
         <button class="close-btn" onclick="closeModal()">닫기 / Close</button>
@@ -283,6 +306,9 @@
 
     <div id="topBar" class="hidden">
         <div id="timerDisplay">01:00</div>
+    </div>
+    <div id="gridSizeLabel" class="hidden">
+        <div class="en">한 칸 길이(Grid size) : 1cm</div>
     </div>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
@@ -376,6 +402,7 @@
         }
 
         let selectedPlayers = 2; let selectedMinutes = 1; let gameTimeLeft = 60; 
+        let selectedWinCondition = 'percent'; // 'perimeter' | 'area' | 'percent'
         let timerInterval = null; let gameState = "MENU";
         const GRID_W = 160; const GRID_H = 90;
         let cellW, cellH; let grid = []; let tailGrid = []; 
@@ -394,6 +421,18 @@
         function closeModal() { Sound.click(); document.getElementById('modalBg').classList.add('hidden'); document.getElementById('infoModal').classList.add('hidden'); }
         function setPlayers(num) { Sound.select(); selectedPlayers = num; document.querySelectorAll('#playerGroup .btn').forEach((btn, idx) => btn.classList.toggle('active', idx === num - 2)); }
         function setTimeLimit(mins) { Sound.select(); selectedMinutes = mins; document.querySelectorAll('#timeGroup .btn').forEach((btn, idx) => btn.classList.toggle('active', idx === mins - 1)); }
+        function setWinCondition(mode) { Sound.select(); selectedWinCondition = mode; document.querySelectorAll('#winConditionGroup .btn').forEach((btn) => btn.classList.remove('active')); document.querySelector(`#winConditionGroup .btn[onclick="setWinCondition('${mode}')"]`).classList.add('active'); }
+        // 승부 조건에 맞는 표시용 텍스트 (예: 둘레→50㎝, 넓이→50㎠, 백분율→23%)
+        function getMetricLabel(p) {
+            if (selectedWinCondition === 'perimeter') return `${p.perimeter || 0}㎝`;
+            if (selectedWinCondition === 'area') return `${p.area || 0}㎠`;
+            return `${p.pctOfTotal || '0.0'}%`;
+        }
+        function getMetricValue(p) {
+            if (selectedWinCondition === 'perimeter') return p.perimeter || 0;
+            if (selectedWinCondition === 'area') return p.area || 0;
+            return parseFloat(p.pctOfTotal || '0');
+        }
         function goToColorCheck() {
             Sound.click();
             document.getElementById('setupOverlay').classList.add('hidden');
@@ -423,6 +462,7 @@
         }
         function startPositioning() {
             document.getElementById('topBar').classList.remove('hidden');
+            document.getElementById('gridSizeLabel').classList.remove('hidden');
             const posOverlay = document.getElementById('positionOverlay');
             posOverlay.classList.remove('hidden');
             resizeCanvas(); initGameData(); gameState = "COUNTDOWN";
@@ -467,7 +507,7 @@
             }
             for (let i = 0; i < selectedPlayers; i++) {
                 let baseX = availablePositions[i];
-                let p = { ...PLAYER_CONFIGS[i], x: baseX, y: baseY, tx: baseX, ty: baseY, spawnX: baseX, spawnY: baseY, activePointerId: null, isDead: false, isEliminated: false, respawnTimer: 0, tailPath: [], pct: '0.0', centerX: baseX, centerY: baseY, lastSafeGridX: baseX, lastSafeGridY: baseY, lastSafeX: baseX, lastSafeY: baseY, isRetreating: false };
+                let p = { ...PLAYER_CONFIGS[i], x: baseX, y: baseY, tx: baseX, ty: baseY, spawnX: baseX, spawnY: baseY, activePointerId: null, isDead: false, isEliminated: false, respawnTimer: 0, tailPath: [], pct: '0.0', pctOfTotal: '0.0', area: 0, perimeter: 0, centerX: baseX, centerY: baseY, lastSafeGridX: baseX, lastSafeGridY: baseY, lastSafeX: baseX, lastSafeY: baseY, isRetreating: false };
                 players.push(p); spawnBase(p.id, p.spawnX, p.spawnY, 5);
             }
             eliminationCounter = 0; endRankMap = null;
@@ -605,14 +645,32 @@
                 for (let y = 0; y < GRID_H; y++) { if (!visited[x][y]) grid[x][y] = pId; }
             }
         }
+        // 각 플레이어의 넓이(cm²) / 둘레(cm) / 넓이 백분율(%) 계산
+        // - 넓이: 칸 한 개 = 1cm² 이므로 칸 수가 그대로 넓이(cm²)
+        // - 둘레: 내 땅과 내 땅이 아닌 곳(다른 사람 땅 또는 화면 밖) 사이의 변의 개수 × 1cm
+        // - 넓이 백분율: 전체 화면 크기가 아니라 "현재 플레이어들이 차지한 땅의 총합" 대비 내 비율
         function calculatePercentages() {
             let counts = new Array(7).fill(0); let sumX = new Array(7).fill(0); let sumY = new Array(7).fill(0);
+            let perim = new Array(7).fill(0);
+            const dx = [1, -1, 0, 0], dy = [0, 0, 1, -1];
             for (let x = 0; x < GRID_W; x++) {
-                for (let y = 0; y < GRID_H; y++) { let id = grid[x][y]; if(id > 0) { counts[id]++; sumX[id] += x; sumY[id] += y; } }
+                for (let y = 0; y < GRID_H; y++) {
+                    let id = grid[x][y];
+                    if (id > 0) {
+                        counts[id]++; sumX[id] += x; sumY[id] += y;
+                        for (let i = 0; i < 4; i++) {
+                            let nx = x + dx[i], ny = y + dy[i];
+                            if (nx < 0 || nx >= GRID_W || ny < 0 || ny >= GRID_H || grid[nx][ny] !== id) perim[id]++;
+                        }
+                    }
+                }
             }
-            let totalCells = GRID_W * GRID_H;
+            let totalOwned = counts.reduce((a, b) => a + b, 0); // 전체 플레이어가 차지한 땅의 총합(칸 수)
             players.forEach(p => {
-                p.pct = ((counts[p.id] / totalCells) * 100).toFixed(1);
+                p.area = counts[p.id];                 // 내 땅의 실제 넓이 (cm²)
+                p.perimeter = perim[p.id];              // 내 땅의 둘레 (cm)
+                p.pctOfTotal = totalOwned > 0 ? ((counts[p.id] / totalOwned) * 100).toFixed(1) : '0.0';
+                p.pct = p.pctOfTotal; // (하위 호환용)
                 if (counts[p.id] > 0) { 
                     p.centerX = sumX[p.id] / counts[p.id]; p.centerY = sumY[p.id] / counts[p.id]; 
                 } else if (gameState === "PLAYING" && !p.isEliminated) {
@@ -700,12 +758,12 @@
                 ctx.lineTo(p.x * cellW, p.y * cellH); ctx.stroke();
             });
             players.forEach(p => {
-                if (!p.isEliminated && parseFloat(p.pct) > 0) {
+                if (!p.isEliminated && p.area > 0) {
                     let textX = p.centerX * cellW, textY = p.centerY * cellH;
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                     ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
-                    ctx.strokeText(p.name, textX, textY - 12); ctx.strokeText(`${p.pct}%`, textX, textY + 16);
-                    ctx.fillText(p.name, textX, textY - 12); ctx.fillText(`${p.pct}%`, textX, textY + 16);
+                    ctx.strokeText(p.name, textX, textY - 12); ctx.strokeText(getMetricLabel(p), textX, textY + 16);
+                    ctx.fillText(p.name, textX, textY - 12); ctx.fillText(getMetricLabel(p), textX, textY + 16);
                 }
             });
             players.forEach(p => {
@@ -727,21 +785,22 @@
         function endGame() {
             gameState = "END"; clearInterval(timerInterval);
             canvas.removeEventListener('pointerdown', handlePointerDown); window.removeEventListener('pointermove', handlePointerMove); window.removeEventListener('pointerup', handlePointerUp); window.removeEventListener('pointercancel', handlePointerUp);
-            // 순위 계산: 생존자는 땅 비율 높은 순, 탈락자는 나중에 탈락한 사람이 위로
+            // 순위 계산: 생존자는 선택한 승부 조건(둘레/넓이/백분율) 값이 높은 순, 탈락자는 나중에 탈락한 사람이 위로
             let rank = [...players].sort((a, b) => {
                 if (a.isEliminated && b.isEliminated) return (b.eliminatedOrder || 0) - (a.eliminatedOrder || 0);
                 if (a.isEliminated) return 1;
                 if (b.isEliminated) return -1;
-                return parseFloat(b.pct) - parseFloat(a.pct);
+                return getMetricValue(b) - getMetricValue(a);
             });
             endRankMap = {};
             rank.forEach((p, idx) => { endRankMap[p.id] = idx + 1; });
-            drawEndBoard(); // 지도(모든 땅) + 각 땅 위에 메달/등수/% 표시
+            drawEndBoard(); // 지도(모든 땅) + 각 땅 위에 메달/등수/승부 조건 값 표시
             document.getElementById('topBar').classList.add('hidden');
+            document.getElementById('gridSizeLabel').classList.add('hidden');
             document.getElementById('gameOverOverlay').classList.remove('hidden');
             Sound.fanfare();
         }
-        // 최종 결과: 지도를 밝게 그대로 보여주고, 각 플레이어 땅 위에 메달(1~3위)/등수와 %를 표시
+        // 최종 결과: 지도를 밝게 그대로 보여주고, 각 플레이어 땅 위에 메달(1~3위)/등수와 승부 조건 값을 표시
         // 1위 🥇 2위 🥈 3위 🥉 는 금/은/동색으로 강조하고, 4~6위는 회색으로 구분해서 표시
         function drawEndBoard() {
             if (!endRankMap) return;
@@ -755,21 +814,21 @@
             const medalEmoji = r => r === 1 ? '🥇 ' : r === 2 ? '🥈 ' : r === 3 ? '🥉 ' : '';
             const medalColor = r => r === 1 ? '#FFD54A' : r === 2 ? '#E6E6E6' : r === 3 ? '#FFA657' : '#8a8d94';
             players.forEach(p => {
-                let hasLand = !p.isEliminated && parseFloat(p.pct) > 0;
+                let hasLand = !p.isEliminated && p.area > 0;
                 let tx = (hasLand ? p.centerX : p.spawnX) * cellW;
                 let ty = (hasLand ? p.centerY : p.spawnY) * cellH;
                 let rank = endRankMap[p.id];
-                let pctStr = p.isEliminated ? '탈락 OUT' : `${p.pct}%`;
+                let valStr = p.isEliminated ? '탈락 OUT' : getMetricLabel(p);
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
                 // 윗줄: "🥇 1P 1위" (4~6위는 메달 없이 회색으로 표시)
                 ctx.font = '900 42px sans-serif'; ctx.lineWidth = 8; ctx.strokeStyle = '#000';
                 let label = `${medalEmoji(rank)}${p.name} ${rank}위`;
                 ctx.strokeText(label, tx, ty - 22);
                 ctx.fillStyle = medalColor(rank); ctx.fillText(label, tx, ty - 22);
-                // 아랫줄: "32.4%" 또는 "탈락 OUT"
+                // 아랫줄: 승부 조건에 맞는 값 - "32.4%" / "50㎠" / "50㎝" 또는 "탈락 OUT"
                 ctx.font = 'bold 36px sans-serif'; ctx.lineWidth = 7; ctx.strokeStyle = '#000';
-                ctx.strokeText(pctStr, tx, ty + 26);
-                ctx.fillStyle = rank <= 3 ? '#FFFFFF' : '#b7bac0'; ctx.fillText(pctStr, tx, ty + 26);
+                ctx.strokeText(valStr, tx, ty + 26);
+                ctx.fillStyle = rank <= 3 ? '#FFFFFF' : '#b7bac0'; ctx.fillText(valStr, tx, ty + 26);
             });
         }
         function resetToMenu() { Sound.click(); gameState = "MENU"; document.getElementById('gameOverOverlay').classList.add('hidden'); document.getElementById('setupOverlay').classList.remove('hidden'); }
