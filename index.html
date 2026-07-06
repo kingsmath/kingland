@@ -218,32 +218,32 @@
         <div class="menu-section">
             <div class="section-title">👥 플레이어 인원 선택 (2~6인용) <span class="en">PLAYERS (2–6)</span></div>
             <div class="btn-group" id="playerGroup">
-                <button class="btn active" onclick="setPlayers(2)">2인</button>
-                <button class="btn" onclick="setPlayers(3)">3인</button>
-                <button class="btn" onclick="setPlayers(4)">4인</button>
-                <button class="btn" onclick="setPlayers(5)">5인</button>
-                <button class="btn" onclick="setPlayers(6)">6인</button>
+                <button class="btn active" onpointerdown="setPlayers(2)">2인</button>
+                <button class="btn" onpointerdown="setPlayers(3)">3인</button>
+                <button class="btn" onpointerdown="setPlayers(4)">4인</button>
+                <button class="btn" onpointerdown="setPlayers(5)">5인</button>
+                <button class="btn" onpointerdown="setPlayers(6)">6인</button>
             </div>
         </div>
         <div class="menu-section">
             <div class="section-title">⏱️ 게임 시간 설정 <span class="en">GAME TIME</span></div>
             <div class="btn-group" id="timeGroup">
-                <button class="btn active" onclick="setTimeLimit(1)">1분 (기본)</button>
-                <button class="btn" onclick="setTimeLimit(2)">2분</button>
-                <button class="btn" onclick="setTimeLimit(3)">3분</button>
+                <button class="btn active" onpointerdown="setTimeLimit(1)">1분 (기본)</button>
+                <button class="btn" onpointerdown="setTimeLimit(2)">2분</button>
+                <button class="btn" onpointerdown="setTimeLimit(3)">3분</button>
             </div>
         </div>
         <div class="menu-section">
             <div class="section-title">🏆 승부 조건 선택 <span class="en">WIN CONDITION</span></div>
             <div class="btn-group" id="winConditionGroup">
-                <button class="btn" onclick="setWinCondition('perimeter')">둘레 (cm)</button>
-                <button class="btn" onclick="setWinCondition('area')">넓이 (cm²)</button>
-                <button class="btn active" onclick="setWinCondition('percent')">넓이 백분율 (%)</button>
+                <button class="btn" onpointerdown="setWinCondition('perimeter')">둘레 (cm)</button>
+                <button class="btn" onpointerdown="setWinCondition('area')">넓이 (cm²)</button>
+                <button class="btn active" onpointerdown="setWinCondition('percent')">넓이 백분율 (%)</button>
             </div>
         </div>
         <div class="action-row">
-            <button class="action-btn info-btn" onclick="openModal()">📖 게임 설명<span class="en">HOW TO PLAY</span></button>
-            <button class="action-btn start-btn" onclick="goToColorCheck()">🚀 시작하기<span class="en">START</span></button>
+            <button class="action-btn info-btn" onpointerdown="openModal()">📖 게임 설명<span class="en">HOW TO PLAY</span></button>
+            <button class="action-btn start-btn" onpointerdown="goToColorCheck()">🚀 시작하기<span class="en">START</span></button>
         </div>
         <div class="more-games-wrap">
             <a class="more-games-link" href="http://킹수학.com" target="_blank" rel="noopener">
@@ -252,12 +252,12 @@
         </div>
     </div>
 
-    <div id="modalBg" class="modal-bg hidden" onclick="closeModal()"></div>
+    <div id="modalBg" class="modal-bg hidden" onpointerdown="closeModal()"></div>
     <div id="infoModal" class="modal hidden">
         <h2>🎮 게임 설명 <span class="en" style="display:inline;opacity:0.6;font-size:0.6em;">HOW TO PLAY</span></h2>
         <div class="modal-tabs">
-            <button class="tab-btn active" id="tabKR" onclick="setModalLang('kr')">한국어</button>
-            <button class="tab-btn" id="tabEN" onclick="setModalLang('en')">English</button>
+            <button class="tab-btn active" id="tabKR" onpointerdown="setModalLang('kr')">한국어</button>
+            <button class="tab-btn" id="tabEN" onpointerdown="setModalLang('en')">English</button>
         </div>
         <div id="modalContentKR">
             <ul>
@@ -277,7 +277,7 @@
                 <li><b>Win Condition:</b> Choose one of three ways to rank players: <b>Perimeter</b> (the border length of your land, in cm), <b>Area</b> (your land's actual size, in cm²), or <b>Area Percentage</b> (your share out of all players' combined land, in %).</li>
             </ul>
         </div>
-        <button class="close-btn" onclick="closeModal()">닫기 / Close</button>
+        <button class="close-btn" onpointerdown="closeModal()">닫기 / Close</button>
     </div>
 
     <div id="colorOverlay" class="overlay hidden">
@@ -301,7 +301,7 @@
 
     <div id="gameOverOverlay" class="overlay hidden">
         <h1 class="kr">🏆 게임 종료! 🏆<span class="en">GAME OVER</span></h1>
-        <button class="action-btn" onclick="resetToMenu()">처음으로 가기<span class="en">BACK TO MENU</span></button>
+        <button class="action-btn" onpointerdown="resetToMenu()">처음으로 가기<span class="en">BACK TO MENU</span></button>
     </div>
 
     <div id="topBar" class="hidden">
@@ -421,7 +421,7 @@
         function closeModal() { Sound.click(); document.getElementById('modalBg').classList.add('hidden'); document.getElementById('infoModal').classList.add('hidden'); }
         function setPlayers(num) { Sound.select(); selectedPlayers = num; document.querySelectorAll('#playerGroup .btn').forEach((btn, idx) => btn.classList.toggle('active', idx === num - 2)); }
         function setTimeLimit(mins) { Sound.select(); selectedMinutes = mins; document.querySelectorAll('#timeGroup .btn').forEach((btn, idx) => btn.classList.toggle('active', idx === mins - 1)); }
-        function setWinCondition(mode) { Sound.select(); selectedWinCondition = mode; document.querySelectorAll('#winConditionGroup .btn').forEach((btn) => btn.classList.remove('active')); document.querySelector(`#winConditionGroup .btn[onclick="setWinCondition('${mode}')"]`).classList.add('active'); }
+        function setWinCondition(mode) { Sound.select(); selectedWinCondition = mode; document.querySelectorAll('#winConditionGroup .btn').forEach((btn) => btn.classList.remove('active')); document.querySelector(`#winConditionGroup .btn[onpointerdown="setWinCondition('${mode}')"]`).classList.add('active'); }
         // 승부 조건에 맞는 표시용 텍스트 (예: 둘레→50㎝, 넓이→50㎠, 백분율→23%)
         function getMetricLabel(p) {
             if (selectedWinCondition === 'perimeter') return `${p.perimeter || 0}㎝`;
@@ -443,7 +443,7 @@
                 let conf = PLAYER_CONFIGS[i];
                 let card = document.createElement('div');
                 card.className = 'player-card'; card.id = `card-${i}`;
-                card.innerHTML = `<div class="player-color-box" style="background-color: ${conf.color};"></div><h2 style="margin: 10px 0; color: ${conf.color}">${conf.name}</h2><button class="confirm-btn" id="btn-${i}" onclick="toggleReady(${i})">확인 / OK</button>`;
+                card.innerHTML = `<div class="player-color-box" style="background-color: ${conf.color};"></div><h2 style="margin: 10px 0; color: ${conf.color}">${conf.name}</h2><button class="confirm-btn" id="btn-${i}" onpointerdown="toggleReady(${i})">확인 / OK</button>`;
                 gridDiv.appendChild(card);
             }
         }
